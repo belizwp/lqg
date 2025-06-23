@@ -10,12 +10,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -62,7 +65,6 @@ fun MainScreen(
     var offsetY by remember { mutableFloatStateOf(0f) }
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
     ) {
         Image(
             modifier = Modifier
@@ -73,15 +75,19 @@ fun MainScreen(
             contentDescription = null,
         )
 
-        var displacementScale by remember { mutableFloatStateOf(80f) }
+        var displacementScale by remember { mutableFloatStateOf(0.3f) }
         var aberrationIntensity by remember { mutableFloatStateOf(10f) }
-        var blurAmount by remember { mutableFloatStateOf(8f) }
-        var cornerRadius by remember { mutableFloatStateOf(50f) }
+        var blurAmount by remember { mutableFloatStateOf(4f) }
+        var cornerRadius by remember { mutableFloatStateOf(30f) }
+        var width by remember { mutableFloatStateOf(200f) }
+        var height by remember { mutableFloatStateOf(100f) }
+        var thickness by remember { mutableFloatStateOf(20f) }
 
         Box(
             Modifier
+                .align(Alignment.TopCenter)
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                .size(200.dp)
+                .size(width.dp, height.dp)
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
@@ -92,7 +98,7 @@ fun MainScreen(
                 .clip(RoundedCornerShape(cornerRadius.dp))
                 .border(
                     // Could use custom brush
-                    width = 1.dp,
+                    width = 0.5.dp,
                     color = Color.White.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(cornerRadius.dp),
                 )
@@ -101,6 +107,8 @@ fun MainScreen(
                     displacementScale = displacementScale,
                     aberrationIntensity = aberrationIntensity,
                     blurAmount = blurAmount.dp,
+                    cornerRadius = cornerRadius.dp,
+                    thickness = thickness.dp,
                 )
         )
 
@@ -113,33 +121,78 @@ fun MainScreen(
                 .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f))
                 .padding(16.dp)
         ) {
-            Text(text = "Displacement Scale: $displacementScale")
-            Slider(
-                value = displacementScale,
-                onValueChange = { displacementScale = it },
-                valueRange = 0f..200f,
+            Row {
+                SliderConf(
+                    text = "width: \n$width dp",
+                    modifier = Modifier.weight(1f),
+                    valueRange = 64f..500f,
+                    value = width,
+                    onValueChange = { width = it },
+                )
+                Spacer(Modifier.width(16.dp))
+                SliderConf(
+                    text = "height: \n$height dp",
+                    modifier = Modifier.weight(1f),
+                    valueRange = 64f..500f,
+                    value = height,
+                    onValueChange = { height = it },
+                )
+            }
+
+            SliderConf(
+                text = "thickness: ${thickness.roundToInt()} dp",
+                value = thickness,
+                onValueChange = { thickness = it },
+                valueRange = 0f..100f,
             )
 
-            Text(text = "Blur Amount: $blurAmount")
-            Slider(
+            SliderConf(
+                text = "Displacement Scale: $displacementScale",
+                value = displacementScale,
+                onValueChange = { displacementScale = it },
+                valueRange = 0f..1f,
+            )
+
+            SliderConf(
+                text = "Blur Amount: $blurAmount",
                 value = blurAmount,
                 onValueChange = { blurAmount = it },
                 valueRange = 0f..20f,
             )
 
-            Text(text = "Aberration Intensity: $aberrationIntensity")
-            Slider(
+            SliderConf(
+                text = "Aberration Intensity: $aberrationIntensity",
                 value = aberrationIntensity,
                 onValueChange = { aberrationIntensity = it },
                 valueRange = 0f..50f,
             )
 
-            Text(text = "Corner Radius: $cornerRadius")
-            Slider(
+            SliderConf(
+                text = "Corner Radius: $cornerRadius",
                 value = cornerRadius,
                 onValueChange = { cornerRadius = it },
                 valueRange = 0f..100f,
             )
         }
+    }
+}
+
+@Composable
+private fun SliderConf(
+    modifier: Modifier = Modifier,
+    text: String = "",
+    valueRange: ClosedFloatingPointRange<Float> = 0f..100f,
+    value: Float = 0f,
+    onValueChange: (Float) -> Unit = { },
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text(text = text)
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+        )
     }
 }
